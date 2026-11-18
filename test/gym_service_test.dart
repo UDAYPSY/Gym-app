@@ -18,11 +18,12 @@ import 'package:gym_manager/screens/tools_screen.dart';
 import 'package:gym_manager/widgets/digital_gym_pass.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('GymService Core Operations Tests', () {
     late GymService gym;
 
     setUp(() async {
-      TestWidgetsFlutterBinding.ensureInitialized();
       gym = GymService();
       await gym.init();
       gym.resetForTesting();
