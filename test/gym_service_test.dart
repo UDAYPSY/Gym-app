@@ -140,7 +140,7 @@ void main() {
       expect(const WorkoutsScreen(), isNotNull);
       expect(const PaymentsScreen(), isNotNull);
       expect(const LeadsScreen(), isNotNull);
-      expect(const DashboardScreen(), isNotNull);
+      expect(DashboardScreen(onNavigate: (_) {}), isNotNull);
       expect(const ToolsScreen(), isNotNull);
       expect(DigitalGymPass(member: gym.members.first), isNotNull);
     });

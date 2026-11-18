@@ -49,7 +49,13 @@ jobs:
         run: flutter pub get
 
       - name: Run Tests
-        run: flutter test test/gym_service_test.dart
+        run: |
+          set -e -o pipefail
+          flutter test test/gym_service_test.dart 2>&1 | tee test_run.log || {
+            echo "==================== TEST FAILURE LOG ===================="
+            cat test_run.log
+            exit 1
+          }
 
       - name: Build Android Release APK
         run: |
