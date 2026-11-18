@@ -9,6 +9,7 @@ void main() {
     late GymService gym;
 
     setUp(() async {
+      TestWidgetsFlutterBinding.ensureInitialized();
       gym = GymService();
       await gym.init();
     });
