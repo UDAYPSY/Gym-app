@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/gym_models.dart';
 import '../services/gym_service.dart';
 import '../services/theme_service.dart';
 import '../constants/app_constants.dart';
