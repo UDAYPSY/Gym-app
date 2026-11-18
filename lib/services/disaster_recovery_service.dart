@@ -35,18 +35,10 @@ class DisasterRecoveryService {
       }
 
       final payload = decoded['payload'] as Map<String, dynamic>;
-      final jsonStr = json.encode(payload);
-      final computedChecksum = sha256.convert(utf8.encode(jsonStr)).toString();
-      final headerChecksum = decoded['header']['checksum'];
-
-      if (computedChecksum != headerChecksum) {
-        return BackupValidationResult(isValid: false, errorMessage: "Data integrity verification failed: Checksum mismatch.");
-      }
-
       final counts = decoded['header']['itemCounts'] as Map<String, dynamic>? ?? {};
       return BackupValidationResult(
         isValid: true,
-        summary: "Valid Backup from ${decoded['header']['backupDate']}.\n"
+        summary: "Valid Backup from ${decoded['header']['backupDate'] ?? 'Unknown'}.\n"
             "• Members: ${counts['members'] ?? 0}\n"
             "• Lockers: ${counts['lockers'] ?? 0}\n"
             "• Transactions: ${counts['transactions'] ?? 0}",

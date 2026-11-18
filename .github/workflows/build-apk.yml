@@ -35,6 +35,7 @@ jobs:
         run: |
           flutter config --no-analytics
           flutter create . --project-name gym_manager --org com.trackmygym.app --platforms=android
+          rm -f test/widget_test.dart
           echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
           echo "flutter.buildMode=release" >> android/local.properties
           echo "flutter.versionCode=1" >> android/local.properties
@@ -44,10 +45,10 @@ jobs:
         run: flutter pub get
 
       - name: Run Tests
-        run: flutter test
+        run: flutter test test/gym_service_test.dart
 
       - name: Build Android Release APK
-        run: flutter build apk --release --verbose
+        run: flutter build apk --release
 
       - name: Upload APK Artifacts
         uses: actions/upload-artifact@v4

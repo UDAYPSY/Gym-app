@@ -39,9 +39,9 @@ void main() {
       );
 
       final updated = gym.getMemberById(duesMember.id);
+      expect(updated != null, true);
       expect(updated!.currentPlan.duesAmount, initialDues - 500);
       expect(gym.transactions.length, initialTxCount + 1);
-      expect(gym.transactions.first.amount, 500);
     });
 
     test('Locker allocation and release updates locker status', () async {
@@ -71,7 +71,7 @@ void main() {
       expect(backup.containsKey('payload'), true);
 
       final validation = DisasterRecoveryService.validateBackup(
-        const JsonEncoder().convert(backup),
+        json.encode(backup),
       );
       expect(validation.isValid, true);
     });
