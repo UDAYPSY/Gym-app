@@ -102,6 +102,13 @@ class GymService {
     _branchCtrl.add(_branch);
   }
 
+  void resetForTesting() {
+    _seedInitialData();
+    _transactions.clear();
+    _attendance.clear();
+    _broadcastAll();
+  }
+
   Future<void> _persist() async {
     final payload = exportFullSnapshot();
     await LocalStorageService.instance.saveString('trackmygym_master_db', json.encode(payload));

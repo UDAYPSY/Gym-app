@@ -12,6 +12,7 @@ void main() {
       TestWidgetsFlutterBinding.ensureInitialized();
       gym = GymService();
       await gym.init();
+      gym.resetForTesting();
     });
 
     test('Initializes with default plans and seed members', () {

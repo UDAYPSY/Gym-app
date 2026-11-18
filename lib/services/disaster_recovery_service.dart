@@ -5,7 +5,8 @@ import 'gym_service.dart';
 class DisasterRecoveryService {
   static Map<String, dynamic> createFullBackup() {
     final snapshot = GymService().exportFullSnapshot();
-    final jsonStr = json.encode(snapshot);
+    final normalized = json.decode(json.encode(snapshot)) as Map<String, dynamic>;
+    final jsonStr = json.encode(normalized);
     final checksum = sha256.convert(utf8.encode(jsonStr)).toString();
 
     return {
@@ -22,7 +23,7 @@ class DisasterRecoveryService {
           'leads': GymService().leads.length,
         }
       },
-      'payload': snapshot,
+      'payload': normalized,
     };
   }
 
