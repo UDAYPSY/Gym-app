@@ -1,0 +1,86 @@
+import glob
+import os
+import re
+
+def patch_gradle_files():
+    # 1. Update android/local.properties with flutter.minSdkVersion=23
+    local_props = 'android/local.properties'
+    try:
+        os.makedirs(os.path.dirname(local_props), exist_ok=True)
+        with open(local_props, 'a', encoding='utf-8') as f:
+            f.write('\nflutter.minSdkVersion=23\n')
+        print(f"Added flutter.minSdkVersion=23 to {local_props}")
+    except Exception as e:
+        print(f"Notice: could not update {local_props}: {e}")
+
+    gradle_files = glob.glob('android/app/build.gradle*')
+    print(f"Found gradle files to patch: {gradle_files}")
+    for file_path in gradle_files:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        is_kts = file_path.endswith('.kts')
+        if is_kts:
+            content = re.sub(r'^\s*.*minSdk.*$', '        minSdk = 23', content, flags=re.MULTILINE)
+            content = re.sub(r'namespace\s*=\s*["\'][^"\']+["\']', 'namespace = "com.trackmygym.app"', content)
+            content = re.sub(r'applicationId\s*=\s*["\'][^"\']+["\']', 'applicationId = "com.trackmygym.app"', content)
+        else:
+            if re.search(r'minSdk\s*=', content):
+                content = re.sub(r'^\s*.*minSdk.*$', '        minSdk = 23', content, flags=re.MULTILINE)
+            else:
+                content = re.sub(r'^\s*.*minSdk(Version)?.*$', '        minSdkVersion 23', content, flags=re.MULTILINE)
+            content = re.sub(r'namespace\s+["\'][^"\']+["\']', 'namespace "com.trackmygym.app"', content)
+            content = re.sub(r'namespace\s*=\s*["\'][^"\']+["\']', 'namespace = "com.trackmygym.app"', content)
+            content = re.sub(r'applicationId\s+["\'][^"\']+["\']', 'applicationId "com.trackmygym.app"', content)
+            content = re.sub(r'applicationId\s*=\s*["\'][^"\']+["\']', 'applicationId = "com.trackmygym.app"', content)
+
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        print(f"Successfully patched {file_path}")
+
+def patch_manifest():
+    manifest_paths = ['android/app/src/main/AndroidManifest.xml']
+    queries_block = """    <queries>
+        <package android:name="com.whatsapp" />
+        <package android:name="com.whatsapp.w4b" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="upi" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="sms" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="smsto" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.DIAL" />
+            <data android:scheme="tel" />
+        </intent>
+    </queries>
+</manifest>"""
+
+    for path in manifest_paths:
+        if os.path.exists(path):
+            with open(path, 'r', encoding='utf-8') as f:
+                content = f.read()
+
+            content = re.sub(r'package\s*=\s*["\'][^"\']+["\']', 'package="com.trackmygym.app"', content)
+            if 'android.permission.INTERNET' not in content:
+                content = content.replace('<application', '<uses-permission android:name="android.permission.INTERNET"/>\n    <application')
+            if '<queries>' not in content and '</manifest>' in content:
+                content = content.replace('</manifest>', queries_block)
+
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            print(f"Patched AndroidManifest at {path}")
+
+if __name__ == '__main__':
+    patch_gradle_files()
+    patch_manifest()

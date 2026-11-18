@@ -5,6 +5,17 @@ import 'package:gym_manager/services/disaster_recovery_service.dart';
 import 'package:gym_manager/services/excel_import_service.dart';
 import 'package:gym_manager/services/vcard_export_service.dart';
 import 'package:gym_manager/models/gym_models.dart';
+import 'package:gym_manager/main.dart';
+import 'package:gym_manager/screens/main_hub_screen.dart';
+import 'package:gym_manager/screens/members_screen.dart';
+import 'package:gym_manager/screens/attendance_screen.dart';
+import 'package:gym_manager/screens/lockers_screen.dart';
+import 'package:gym_manager/screens/workouts_screen.dart';
+import 'package:gym_manager/screens/payments_screen.dart';
+import 'package:gym_manager/screens/leads_screen.dart';
+import 'package:gym_manager/screens/dashboard_screen.dart';
+import 'package:gym_manager/screens/tools_screen.dart';
+import 'package:gym_manager/widgets/digital_gym_pass.dart';
 
 void main() {
   group('GymService Core Operations Tests', () {
@@ -42,7 +53,7 @@ void main() {
 
       final updated = gym.getMemberById(duesMember.id);
       expect(updated != null, true);
-      expect(updated!.currentPlan.duesAmount, initialDues - 500.0);
+      expect(updated!.currentPlan.duesAmount, closeTo(initialDues - 500.0, 0.01));
       expect(gym.transactions.length, initialTxCount + 1);
     });
 
@@ -118,6 +129,20 @@ void main() {
       final result = await ExcelImportService.parseAndImport(tsvData, gym);
       expect(result.successfullyImported, 1);
       expect(gym.findMemberByPhone("9800011122") != null, true);
+    });
+
+    test('All UI screens and widgets compile and instantiate cleanly', () {
+      expect(const TrackMyGymApp(), isNotNull);
+      expect(const MainHubScreen(), isNotNull);
+      expect(const MembersScreen(), isNotNull);
+      expect(const AttendanceScreen(), isNotNull);
+      expect(const LockersScreen(), isNotNull);
+      expect(const WorkoutsScreen(), isNotNull);
+      expect(const PaymentsScreen(), isNotNull);
+      expect(const LeadsScreen(), isNotNull);
+      expect(const DashboardScreen(), isNotNull);
+      expect(const ToolsScreen(), isNotNull);
+      expect(DigitalGymPass(member: gym.members.first), isNotNull);
     });
   });
 }

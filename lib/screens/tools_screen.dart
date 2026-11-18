@@ -243,7 +243,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
               actions: [
                 ElevatedButton.icon(
                   onPressed: _showExcelImportDialog,
-                  icon: const Icon(Icons.paste, size: 18),
+                  icon: const Icon(Icons.content_paste, size: 18),
                   label: const Text("Paste Excel Rows"),
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                 ),

@@ -816,6 +816,16 @@ class GymService {
     ]);
 
     // Seed Multi-Branches
+    _branch = BranchProfile(
+      id: "b_1",
+      branchName: "TrackMyGym Flagship Club (Main Hub)",
+      address: "Plot 42, Fitness Avenue, Sector 18",
+      phone: "9876543210",
+      gstNumber: "07AAAAA0000A1Z5",
+      upiId: "trackmygym@upi",
+      capacityLimit: 150,
+      currencySymbol: "₹",
+    );
     _branches.clear();
     _branches.addAll([
       _branch,
