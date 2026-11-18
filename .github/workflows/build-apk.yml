@@ -34,8 +34,7 @@ jobs:
       - name: Generate Android Platform Scaffolding
         run: |
           flutter config --no-analytics
-          rm -rf android
-          flutter create . --org com.trackmygym.app --platforms=android
+          flutter create . --project-name gym_manager --org com.trackmygym.app --platforms=android
           echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
           echo "flutter.buildMode=release" >> android/local.properties
           echo "flutter.versionCode=1" >> android/local.properties
