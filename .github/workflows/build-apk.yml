@@ -45,16 +45,21 @@ jobs:
         run: flutter pub get
 
       - name: Run Tests
-        run: flutter test test/gym_service_test.dart || true
+        run: |
+          flutter test test/gym_service_test.dart 2>&1 | tee test_run.log || {
+            tail -n 25 test_run.log | while IFS= read -r line; do
+              echo "::warning title=TestError::$line"
+            done
+          }
 
       - name: Build Android Release APK
         run: |
           set -o pipefail
           flutter build apk --release 2>&1 | tee build_apk.log || {
-            echo "### Build Failed" >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            tail -n 100 build_apk.log >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "Build failed. Emitting annotations..."
+            tail -n 25 build_apk.log | while IFS= read -r line; do
+              echo "::error title=GradleError::$line"
+            done
             exit 1
           }
 
