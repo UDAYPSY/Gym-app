@@ -34,13 +34,13 @@ void main() {
 
       await gym.collectDues(
         memberId: duesMember.id,
-        amount: 500,
+        amount: 500.0,
         paymentMethod: "upi",
       );
 
       final updated = gym.getMemberById(duesMember.id);
       expect(updated != null, true);
-      expect(updated!.currentPlan.duesAmount, initialDues - 500);
+      expect(updated!.currentPlan.duesAmount, initialDues - 500.0);
       expect(gym.transactions.length, initialTxCount + 1);
     });
 
@@ -51,7 +51,7 @@ void main() {
       await gym.allocateLocker(
         lockerId: availableLocker.id,
         memberId: member.id,
-        deposit: 500,
+        deposit: 500.0,
       );
 
       final updatedLocker = gym.lockers.firstWhere((l) => l.id == availableLocker.id);
