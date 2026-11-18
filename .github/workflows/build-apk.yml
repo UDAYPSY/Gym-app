@@ -52,13 +52,7 @@ jobs:
         run: flutter test test/gym_service_test.dart || true
 
       - name: Build Android Release APK
-        run: |
-          set -e -o pipefail
-          flutter build apk --release --no-tree-shake-icons -v 2>&1 | tee apk_build.log || {
-            echo "==================== APK BUILD FAILURE LOG ===================="
-            tail -n 250 apk_build.log
-            exit 1
-          }
+        run: flutter build apk --release
 
       - name: Upload APK Artifacts
         uses: actions/upload-artifact@v4
