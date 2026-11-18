@@ -20,12 +20,16 @@ class GymService {
   final List<PersonalTrainingSession> _ptSessions = [];
   final List<WalkInLead> _leads = [];
   final List<EquipmentAsset> _equipment = [];
+  final List<GymExpense> _expenses = [];
+  final List<BranchProfile> _branches = [];
+
   BranchProfile _branch = BranchProfile(
     id: "b_1",
     branchName: "TrackMyGym Fitness Hub",
     address: "Plot 42, Sector 14, Commercial District",
     phone: "9876543210",
     gstNumber: "07AAAAA0000A1Z5",
+    upiId: "trackmygym@upi",
     capacityLimit: 120,
     currencySymbol: "₹",
   );
@@ -40,6 +44,8 @@ class GymService {
   final _ptSessionsCtrl = StreamController<List<PersonalTrainingSession>>.broadcast();
   final _leadsCtrl = StreamController<List<WalkInLead>>.broadcast();
   final _equipmentCtrl = StreamController<List<EquipmentAsset>>.broadcast();
+  final _expensesCtrl = StreamController<List<GymExpense>>.broadcast();
+  final _branchesCtrl = StreamController<List<BranchProfile>>.broadcast();
   final _branchCtrl = StreamController<BranchProfile>.broadcast();
 
   // Public Streams
@@ -52,6 +58,8 @@ class GymService {
   Stream<List<PersonalTrainingSession>> get ptSessionsStream => _ptSessionsCtrl.stream;
   Stream<List<WalkInLead>> get leadsStream => _leadsCtrl.stream;
   Stream<List<EquipmentAsset>> get equipmentStream => _equipmentCtrl.stream;
+  Stream<List<GymExpense>> get expensesStream => _expensesCtrl.stream;
+  Stream<List<BranchProfile>> get branchesStream => _branchesCtrl.stream;
   Stream<BranchProfile> get branchStream => _branchCtrl.stream;
 
   // Direct Synchronous Getters
@@ -64,6 +72,8 @@ class GymService {
   List<PersonalTrainingSession> get ptSessions => List.unmodifiable(_ptSessions);
   List<WalkInLead> get leads => List.unmodifiable(_leads);
   List<EquipmentAsset> get equipment => List.unmodifiable(_equipment);
+  List<GymExpense> get expenses => List.unmodifiable(_expenses);
+  List<BranchProfile> get branches => List.unmodifiable(_branches);
   BranchProfile get branch => _branch;
 
   bool _initialized = false;
@@ -99,6 +109,8 @@ class GymService {
     _ptSessionsCtrl.add(List.unmodifiable(_ptSessions));
     _leadsCtrl.add(List.unmodifiable(_leads));
     _equipmentCtrl.add(List.unmodifiable(_equipment));
+    _expensesCtrl.add(List.unmodifiable(_expenses));
+    _branchesCtrl.add(List.unmodifiable(_branches));
     _branchCtrl.add(_branch);
   }
 
@@ -106,6 +118,7 @@ class GymService {
     _seedInitialData();
     _transactions.clear();
     _attendance.clear();
+    _expenses.clear();
     _broadcastAll();
   }
 
@@ -417,6 +430,51 @@ class GymService {
   }
 
   // ==========================================
+  // EXPENSES & OPERATING PROFIT
+  // ==========================================
+
+  Future<void> addExpense(GymExpense expense) async {
+    _expenses.insert(0, expense);
+    _expensesCtrl.add(List.unmodifiable(_expenses));
+    await _persist();
+  }
+
+  Future<void> deleteExpense(String id) async {
+    _expenses.removeWhere((e) => e.id == id);
+    _expensesCtrl.add(List.unmodifiable(_expenses));
+    await _persist();
+  }
+
+  double getTotalExpenses() {
+    return _expenses.fold(0.0, (acc, e) => acc + e.amount);
+  }
+
+  double getNetProfit() {
+    final revenue = _transactions.fold(0.0, (acc, t) => acc + t.amount);
+    final totalExpenses = getTotalExpenses();
+    return revenue - totalExpenses;
+  }
+
+  // ==========================================
+  // MULTI-BRANCH MANAGEMENT
+  // ==========================================
+
+  void switchBranch(String branchId) {
+    final found = _branches.where((b) => b.id == branchId).toList();
+    if (found.isNotEmpty) {
+      _branch = found.first;
+      _branchCtrl.add(_branch);
+      _persist();
+    }
+  }
+
+  Future<void> addBranch(BranchProfile branch) async {
+    _branches.add(branch);
+    _branchesCtrl.add(List.unmodifiable(_branches));
+    await _persist();
+  }
+
+  // ==========================================
   // WORKOUT LOGGING ENGINE
   // ==========================================
 
@@ -482,6 +540,7 @@ class GymService {
       'version': '1.0.0',
       'exportedAt': DateTime.now().toIso8601String(),
       'branch': _branch.toJson(),
+      'branches': _branches.map((b) => b.toJson()).toList(),
       'members': _members.map((m) => m.toJson()).toList(),
       'lockers': _lockers.map((l) => l.toJson()).toList(),
       'plans': _plans.map((p) => p.toJson()).toList(),
@@ -491,6 +550,7 @@ class GymService {
       'ptSessions': _ptSessions.map((pt) => pt.toJson()).toList(),
       'leads': _leads.map((l) => l.toJson()).toList(),
       'equipment': _equipment.map((e) => e.toJson()).toList(),
+      'expenses': _expenses.map((e) => e.toJson()).toList(),
     };
   }
 
@@ -503,6 +563,11 @@ class GymService {
   void _loadFromMap(Map<String, dynamic> data) {
     if (data['branch'] != null) {
       _branch = BranchProfile.fromJson(data['branch']);
+    }
+
+    if (data['branches'] != null) {
+      _branches.clear();
+      _branches.addAll((data['branches'] as List).map((b) => BranchProfile.fromJson(b)));
     }
 
     if (data['members'] != null) {
@@ -548,6 +613,11 @@ class GymService {
     if (data['equipment'] != null) {
       _equipment.clear();
       _equipment.addAll((data['equipment'] as List).map((e) => EquipmentAsset.fromJson(e)));
+    }
+
+    if (data['expenses'] != null) {
+      _expenses.clear();
+      _expenses.addAll((data['expenses'] as List).map((e) => GymExpense.fromJson(e)));
     }
   }
 
@@ -742,6 +812,63 @@ class GymService {
         lastServicedDate: DateTime.now().subtract(const Duration(days: 15)),
         nextServiceDue: DateTime.now().add(const Duration(days: 75)),
         status: "operational",
+      ),
+    ]);
+
+    // Seed Multi-Branches
+    _branches.clear();
+    _branches.addAll([
+      _branch,
+      BranchProfile(
+        id: "b_2",
+        branchName: "TrackMyGym Elite Club (Mall Road)",
+        address: "3rd Floor, Galleria Mall, Mall Road",
+        phone: "9876543299",
+        gstNumber: "07AAAAA0000A2Z4",
+        upiId: "trackmygym.elite@upi",
+        capacityLimit: 200,
+        currencySymbol: "₹",
+      ),
+    ]);
+
+    // Seed Running Operational Expenses
+    _expenses.clear();
+    _expenses.addAll([
+      GymExpense(
+        id: "exp_1",
+        title: "Commercial Treadmill AMC & Belt Lubrication",
+        category: "Equipment AMC & Repair",
+        amount: 4500,
+        date: DateTime.now().subtract(const Duration(days: 5)),
+        paymentMode: "UPI",
+        note: "Quarterly preventative maintenance for all 6 treadmills",
+      ),
+      GymExpense(
+        id: "exp_2",
+        title: "Commercial High-Load HVAC & AC Electricity Bill",
+        category: "Electricity/HVAC",
+        amount: 18500,
+        date: DateTime.now().subtract(const Duration(days: 10)),
+        paymentMode: "Bank Transfer",
+        note: "Monthly power utility for 8-ton central AC plant",
+      ),
+      GymExpense(
+        id: "exp_3",
+        title: "Trainer Salary Advance (Coach Rocky)",
+        category: "Trainer Salaries",
+        amount: 15000,
+        date: DateTime.now().subtract(const Duration(days: 12)),
+        paymentMode: "UPI",
+        note: "Mid-month advance for personal training sessions",
+      ),
+      GymExpense(
+        id: "exp_4",
+        title: "Housekeeping, Floor Sanitizer & Water Dispenser",
+        category: "Cleaning/Sanitization",
+        amount: 2200,
+        date: DateTime.now().subtract(const Duration(days: 18)),
+        paymentMode: "Cash",
+        note: "Disinfectant wipes, hand wash, and 20L mineral water cans",
       ),
     ]);
   }

@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_manager/services/gym_service.dart';
 import 'package:gym_manager/services/disaster_recovery_service.dart';
+import 'package:gym_manager/services/excel_import_service.dart';
+import 'package:gym_manager/services/vcard_export_service.dart';
 import 'package:gym_manager/models/gym_models.dart';
 
 void main() {
@@ -74,6 +76,48 @@ void main() {
         json.encode(backup),
       );
       expect(validation.isValid, true);
+    });
+
+    test('GymExpense logs operational costs and computes operating profit', () async {
+      await gym.addExpense(GymExpense(
+        id: "exp_test_1",
+        title: "Treadmill Service",
+        category: "Equipment AMC & Repair",
+        amount: 2000.0,
+        date: DateTime.now(),
+      ));
+
+      expect(gym.expenses.any((e) => e.id == "exp_test_1"), true);
+      expect(gym.getTotalExpenses() >= 2000.0, true);
+
+      await gym.deleteExpense("exp_test_1");
+      expect(gym.expenses.any((e) => e.id == "exp_test_1"), false);
+    });
+
+    test('Multi-branch switcher updates active branch profile', () {
+      expect(gym.branches.isNotEmpty, true);
+      final otherBranch = gym.branches.firstWhere((b) => b.id == "b_2");
+      gym.switchBranch("b_2");
+      expect(gym.branch.id, "b_2");
+      expect(gym.branch.branchName, otherBranch.branchName);
+    });
+
+    test('VCardExportService generates valid vCard string with member details', () {
+      final vcf = VCardExportService.generateVcf(gym.members, gym.branch);
+      expect(vcf.contains("BEGIN:VCARD"), true);
+      expect(vcf.contains("END:VCARD"), true);
+      expect(vcf.contains(gym.members.first.fullName), true);
+    });
+
+    test('ExcelImportService generates valid template and parses rows', () async {
+      final template = ExcelImportService.generateTemplateCsv();
+      expect(template.contains("Full Name"), true);
+      expect(template.contains("Phone Number"), true);
+
+      const tsvData = "Test Member\t9800011122\tMorning\tL-15\t3 Months Pro\t3000\tMale\tEmergency Contact\tSector 5\t0";
+      final result = await ExcelImportService.parseAndImport(tsvData, gym);
+      expect(result.successfullyImported, 1);
+      expect(gym.findMemberByPhone("9800011122") != null, true);
     });
   });
 }

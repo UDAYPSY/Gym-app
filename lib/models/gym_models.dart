@@ -737,15 +737,65 @@ class EquipmentAsset {
   );
 }
 
-/// Gym Branch Profile
+/// Gym Running Expense Item
+class GymExpense {
+  final String id;
+  final String title;
+  final String category; // Equipment AMC & Repair, Electricity/HVAC, Premises Rent, Trainer Salaries, Cleaning/Sanitization, Supplements Restock
+  final double amount;
+  final DateTime date;
+  final String paymentMode; // UPI, Cash, Card, Bank Transfer
+  final String note;
+  final String branchId;
+
+  GymExpense({
+    required this.id,
+    required this.title,
+    required this.category,
+    required this.amount,
+    required this.date,
+    this.paymentMode = "Cash",
+    this.note = "",
+    this.branchId = "b_1",
+  });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'category': category,
+    'amount': amount,
+    'date': date.toIso8601String(),
+    'paymentMode': paymentMode,
+    'note': note,
+    'branchId': branchId,
+  };
+
+  factory GymExpense.fromJson(Map<String, dynamic> json) => GymExpense(
+    id: json['id'] ?? '',
+    title: json['title'] ?? '',
+    category: json['category'] ?? 'Equipment AMC & Repair',
+    amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+    date: json['date'] != null ? DateTime.parse(json['date']) : DateTime.now(),
+    paymentMode: json['paymentMode'] ?? 'Cash',
+    note: json['note'] ?? '',
+    branchId: json['branchId'] ?? 'b_1',
+  );
+}
+
+/// Gym Branch Profile with Dynamic UPI & WhatsApp Automation
 class BranchProfile {
   final String id;
   final String branchName;
   final String address;
   final String phone;
   final String gstNumber;
+  final String upiId;
   final int capacityLimit;
   final String currencySymbol;
+  final String welcomeTemplate;
+  final String reminderTemplate;
+  final String receiptTemplate;
+  final String lockerTemplate;
 
   BranchProfile({
     required this.id,
@@ -753,9 +803,36 @@ class BranchProfile {
     required this.address,
     required this.phone,
     this.gstNumber = "",
+    this.upiId = "",
     this.capacityLimit = 150,
     this.currencySymbol = "₹",
+    this.welcomeTemplate = "Hello {member_name}, welcome to {gym_name}! Your assigned locker is {locker_number} ({shift}). Let's crush your fitness goals!",
+    this.reminderTemplate = "Dear {member_name}, your membership fee of ₹{due_amount} at {gym_name} is due on {due_date}. Thank you!",
+    this.receiptTemplate = "Payment Received! Dear {member_name}, received ₹{amount} via {mode} for your subscription at {gym_name}. Valid until {valid_until}.",
+    this.lockerTemplate = "Locker Allocated! Dear {member_name}, Locker {locker_number} has been allocated to you at {gym_name}.",
   });
+
+  String get effectiveUpiId {
+    if (upiId.trim().isNotEmpty) return upiId.trim();
+    final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
+    if (cleanPhone.length >= 10) {
+      final p10 = cleanPhone.substring(cleanPhone.length - 10);
+      return '$p10@upi';
+    }
+    return '';
+  }
+
+  String generateUpiPaymentUrl({
+    required double amount,
+    required String memberName,
+    String? note,
+  }) {
+    final vpa = effectiveUpiId;
+    final name = Uri.encodeComponent(branchName.isNotEmpty ? branchName : 'TrackMyGym');
+    final memo = Uri.encodeComponent(note ?? 'Fee: $memberName');
+    final amt = amount.toStringAsFixed(2);
+    return 'upi://pay?pa=$vpa&pn=$name&am=$amt&cu=INR&tn=$memo';
+  }
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -763,8 +840,13 @@ class BranchProfile {
     'address': address,
     'phone': phone,
     'gstNumber': gstNumber,
+    'upiId': upiId,
     'capacityLimit': capacityLimit,
     'currencySymbol': currencySymbol,
+    'welcomeTemplate': welcomeTemplate,
+    'reminderTemplate': reminderTemplate,
+    'receiptTemplate': receiptTemplate,
+    'lockerTemplate': lockerTemplate,
   };
 
   factory BranchProfile.fromJson(Map<String, dynamic> json) => BranchProfile(
@@ -773,7 +855,12 @@ class BranchProfile {
     address: json['address'] ?? '',
     phone: json['phone'] ?? '',
     gstNumber: json['gstNumber'] ?? '',
+    upiId: json['upiId'] ?? '',
     capacityLimit: json['capacityLimit'] ?? 150,
     currencySymbol: json['currencySymbol'] ?? '₹',
+    welcomeTemplate: json['welcomeTemplate'] ?? "Hello {member_name}, welcome to {gym_name}!",
+    reminderTemplate: json['reminderTemplate'] ?? "Dear {member_name}, your gym fee is due.",
+    receiptTemplate: json['receiptTemplate'] ?? "Payment Received! Dear {member_name}, thank you.",
+    lockerTemplate: json['lockerTemplate'] ?? "Locker Allocated! Dear {member_name}, Locker {locker_number}.",
   );
 }

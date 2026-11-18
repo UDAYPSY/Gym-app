@@ -49,24 +49,61 @@ class _MainHubScreenState extends State<MainHubScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.fitness_center, color: AppColors.primary, size: 22),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  gym.branch.branchName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-              ],
+            title: StreamBuilder<BranchProfile>(
+              stream: gym.branchStream,
+              builder: (context, snapshot) {
+                final currentBranch = snapshot.data ?? gym.branch;
+                return Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.fitness_center, color: AppColors.primary, size: 22),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          currentBranch.branchName,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        Text(
+                          "${currentBranch.address} • UPI: ${currentBranch.effectiveUpiId}",
+                          style: const TextStyle(color: AppColors.textSecondary, fontSize: 10),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
             actions: [
+              // Branch Switcher Menu
+              StreamBuilder<List<BranchProfile>>(
+                stream: gym.branchesStream,
+                builder: (context, snapshot) {
+                  final branches = snapshot.data ?? gym.branches;
+                  return PopupMenuButton<String>(
+                    icon: const Icon(Icons.location_on, color: AppColors.accent),
+                    tooltip: "Switch Branch",
+                    onSelected: (id) => gym.switchBranch(id),
+                    itemBuilder: (ctx) => branches.map((b) => PopupMenuItem(
+                      value: b.id,
+                      child: Row(
+                        children: [
+                          Icon(Icons.business, size: 16, color: b.id == gym.branch.id ? AppColors.primary : AppColors.textMuted),
+                          const SizedBox(width: 8),
+                          Text(b.branchName, style: TextStyle(fontWeight: b.id == gym.branch.id ? FontWeight.bold : FontWeight.normal)),
+                        ],
+                      ),
+                    )).toList(),
+                  );
+                },
+              ),
               // Theme Toggle
               IconButton(
                 icon: Icon(

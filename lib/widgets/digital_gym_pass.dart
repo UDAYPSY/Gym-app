@@ -13,6 +13,10 @@ class DigitalGymPass extends StatelessWidget {
 
   void _shareViaWhatsApp(BuildContext context) async {
     final branch = GymService().branch;
+    final upiSection = member.hasDues
+        ? "\n💳 *Instant UPI Dues Payment:* ${branch.generateUpiPaymentUrl(amount: member.currentPlan.duesAmount, memberName: member.fullName)}\n(VPA: ${branch.effectiveUpiId})\n"
+        : "";
+
     final message = "🏋️ *${branch.branchName} — DIGITAL MEMBERSHIP PASS*\n\n"
         "👤 *Member:* ${member.fullName}\n"
         "📱 *Phone:* ${member.normalizedPhone}\n"
@@ -20,7 +24,8 @@ class DigitalGymPass extends StatelessWidget {
         "📅 *Valid Until:* ${member.currentPlan.endDate.toString().split(' ')[0]}\n"
         "🔒 *Locker:* ${member.lockerId ?? 'Not Assigned'}\n"
         "⏰ *Shift Slot:* ${member.shiftSlot}\n"
-        "💰 *Dues Pending:* ${branch.currencySymbol}${member.currentPlan.duesAmount.toStringAsFixed(0)}\n\n"
+        "💰 *Dues Pending:* ${branch.currencySymbol}${member.currentPlan.duesAmount.toStringAsFixed(0)}"
+        "$upiSection\n\n"
         "Show this pass or present your QR at reception for seamless check-in!";
 
     final encoded = Uri.encodeComponent(message);

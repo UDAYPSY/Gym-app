@@ -17,19 +17,19 @@
 │  • Dynamic QR Gate  │  • Photo KYC Capture│  • High-Res Member Pass Card    │
 │  • Anti-Passback 60m│  • Normalized Phone │  • Dynamic Vector QR Code       │
 │  • Live Status Alert│  • PAR-Q Health Form│  • 1-Tap WhatsApp Dispatch      │
-│  • Fast Phone Lookup│  • Emergency Contact│  • Live Expiry & Dues Indicator │
+│  • Fast Phone Lookup│  • Emergency Contact│  • Dynamic UPI Payment Link     │
 ├─────────────────────┼─────────────────────┼─────────────────────────────────┤
-│  4. LOCKER FLOOR MAP│  5. WORKOUT LOGGER  │  6. FINANCIAL LEDGER & POS      │
+│  4. LOCKER FLOOR MAP│  5. WORKOUT LOGGER  │  6. FINANCIAL LEDGER & EXPENSES │
 │  • Visual Locker Grid│ • Sets, Reps & Kg  │  • Cash vs UPI Daily Audit      │
-│  • 1-to-1 Assignment│ • Rest Interval Pop │  • Partial Dues Collection      │
-│  • Status Indicators│ • Volume Calculator │  • GST Tax Invoices             │
-│  • Deposit Tracking │ • Routine Templates │  • WhatsApp Payment Receipts    │
-├─────────────────────┴─────────────────────┴─────────────────────────────────┤
-│  7. DATA SOVEREIGNTY & DISASTER RECOVERY                                    │
-│  • 100% Offline-First Operation (Local Storage & SharedPreferences)         │
-│  • 1-Click Encrypted Full JSON Snapshot (Members, Lockers, Ledger, Logs)    │
-│  • SHA-256 Checksum Verification & Pre-Restore Inspection Modal              │
-└─────────────────────────────────────────────────────────────────────────────┘
+│  • 1-to-1 Assignment│ • Rest Interval Pop │  • Operational Expense Tracker  │
+│  • Status Indicators│ • Volume Calculator │  • Net Operating Profit Margin  │
+│  • Deposit Tracking │ • Routine Templates │  • GST Tax Invoices             │
+├─────────────────────┼─────────────────────┼─────────────────────────────────┤
+│  7. SPREADSHEET SYNC│  8. MULTI-BRANCH    │  9. DATA SOVEREIGNTY            │
+│  • CSV Template Gen │  • Multi-Location Sw│  • 100% Offline-First Engine    │
+│  • TSV Clipboard In │  • Per-Branch UPI ID│  • 1-Click JSON System Snapshot │
+│  • vCard (.vcf) Out │  • Floor Capacities │  • Pre-Restore Verification Modal│
+└─────────────────────┴─────────────────────┴─────────────────────────────────┘
 ```
 
 ---
