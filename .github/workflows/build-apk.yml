@@ -34,16 +34,12 @@ jobs:
       - name: Generate Android Platform Scaffolding
         run: |
           flutter config --no-analytics
-          cp pubspec.yaml pubspec.yaml.bak
           flutter create . --project-name gym_manager --org com.trackmygym.app --platforms=android
-          cp pubspec.yaml.bak pubspec.yaml
           rm -f test/widget_test.dart
           echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
           echo "flutter.buildMode=release" >> android/local.properties
           echo "flutter.versionCode=1" >> android/local.properties
           echo "flutter.versionName=1.0.0" >> android/local.properties
-          echo "flutter.minSdkVersion=23" >> android/local.properties
-          python3 .github/scripts/patch_android.py
 
       - name: Install Dependencies
         run: flutter pub get
@@ -52,7 +48,22 @@ jobs:
         run: flutter test test/gym_service_test.dart || true
 
       - name: Build Android Release APK
-        run: flutter build apk --release
+        run: |
+          set -o pipefail
+          flutter build apk --release 2>&1 | tee build_apk.log || {
+            echo "### Build Failed" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -n 100 build_apk.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            exit 1
+          }
+
+      - name: Upload Build Log on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-failure-log
+          path: build_apk.log
 
       - name: Upload APK Artifacts
         uses: actions/upload-artifact@v4
