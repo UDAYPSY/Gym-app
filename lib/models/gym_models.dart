@@ -65,6 +65,7 @@ class GymMember {
     String? assignedTrainerId,
     String? assignedTrainerName,
     String? notes,
+    bool clearLocker = false,
   }) {
     return GymMember(
       id: id ?? this.id,
@@ -79,7 +80,7 @@ class GymMember {
       joinedDate: joinedDate ?? this.joinedDate,
       status: status ?? this.status,
       currentPlan: currentPlan ?? this.currentPlan,
-      lockerId: lockerId ?? this.lockerId,
+      lockerId: clearLocker ? null : (lockerId ?? this.lockerId),
       shiftSlot: shiftSlot ?? this.shiftSlot,
       assignedTrainerId: assignedTrainerId ?? this.assignedTrainerId,
       assignedTrainerName: assignedTrainerName ?? this.assignedTrainerName,
@@ -293,12 +294,13 @@ class Locker {
     String? assignedMemberName,
     double? depositAmount,
     LockerStatus? status,
+    bool clearMember = false,
   }) => Locker(
     id: id ?? this.id,
     lockerCode: lockerCode ?? this.lockerCode,
-    assignedMemberId: assignedMemberId ?? this.assignedMemberId,
-    assignedMemberName: assignedMemberName ?? this.assignedMemberName,
-    depositAmount: depositAmount ?? this.depositAmount,
+    assignedMemberId: clearMember ? null : (assignedMemberId ?? this.assignedMemberId),
+    assignedMemberName: clearMember ? null : (assignedMemberName ?? this.assignedMemberName),
+    depositAmount: clearMember ? 0.0 : (depositAmount ?? this.depositAmount),
     status: status ?? this.status,
   );
 

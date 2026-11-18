@@ -291,13 +291,12 @@ class GymService {
     if (locker.assignedMemberId != null) {
       final member = getMemberById(locker.assignedMemberId!);
       if (member != null) {
-        await updateMember(member.copyWith(lockerId: null));
+        await updateMember(member.copyWith(clearLocker: true));
       }
     }
 
     _lockers[lIndex] = locker.copyWith(
-      assignedMemberId: null,
-      assignedMemberName: null,
+      clearMember: true,
       status: LockerStatus.available,
     );
     _lockersCtrl.add(List.unmodifiable(_lockers));
